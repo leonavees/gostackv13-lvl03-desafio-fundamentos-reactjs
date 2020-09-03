@@ -13,92 +13,119 @@ import formatValue from '../../utils/formatValue';
 import { Container, CardContainer, Card, TableContainer } from './styles';
 
 interface Transaction {
-  id: string;
-  title: string;
-  value: number;
-  formattedValue: string;
-  formattedDate: string;
-  type: 'income' | 'outcome';
-  category: { title: string };
-  created_at: Date;
+    id: string;
+    title: string;
+    value: number;
+    formattedValue: string;
+    formattedDate: string;
+    type: 'income' | 'outcome';
+    category: { title: string };
+    created_at: Date;
 }
 
 interface Balance {
-  income: string;
-  outcome: string;
-  total: string;
+    income: string;
+    outcome: string;
+    total: string;
+}
+
+interface TransactionsResponse {
+    transactions: Transaction[];
+    balance: Balance;
 }
 
 const Dashboard: React.FC = () => {
-  // const [transactions, setTransactions] = useState<Transaction[]>([]);
-  // const [balance, setBalance] = useState<Balance>({} as Balance);
+    const [transactions, setTransactions] = useState<Transaction[]>([]);
+    const [balance, setBalance] = useState<Balance>({} as Balance);
 
-  useEffect(() => {
-    async function loadTransactions(): Promise<void> {
-      // TODO
-    }
+    useEffect(() => {
+        async function loadTransactions(): Promise<void> {
+            const {
+                transactions: responseTransactions,
+                balance: responseBalance,
+            } = (await api.get<TransactionsResponse>('transactions')).data;
 
-    loadTransactions();
-  }, []);
+            setTransactions(
+                responseTransactions.map(transaction => ({
+                    ...transaction,
+                    formattedDate: new Date(
+                        transaction.created_at,
+                    ).toLocaleDateString(),
+                    formattedValue: formatValue(transaction.value),
+                })),
+            );
+            setBalance({
+                income: formatValue(Number(responseBalance.income)),
+                outcome: `- ${formatValue(Number(responseBalance.outcome))}`,
+                total: formatValue(Number(responseBalance.total)),
+            });
+        }
 
-  return (
-    <>
-      <Header />
-      <Container>
-        <CardContainer>
-          <Card>
-            <header>
-              <p>Entradas</p>
-              <img src={income} alt="Income" />
-            </header>
-            <h1 data-testid="balance-income">R$ 5.000,00</h1>
-          </Card>
-          <Card>
-            <header>
-              <p>Saídas</p>
-              <img src={outcome} alt="Outcome" />
-            </header>
-            <h1 data-testid="balance-outcome">R$ 1.000,00</h1>
-          </Card>
-          <Card total>
-            <header>
-              <p>Total</p>
-              <img src={total} alt="Total" />
-            </header>
-            <h1 data-testid="balance-total">R$ 4000,00</h1>
-          </Card>
-        </CardContainer>
+        loadTransactions();
+    }, []);
 
-        <TableContainer>
-          <table>
-            <thead>
-              <tr>
-                <th>Título</th>
-                <th>Preço</th>
-                <th>Categoria</th>
-                <th>Data</th>
-              </tr>
-            </thead>
+    return (
+        <>
+            <Header />
+            <Container>
+                <CardContainer>
+                    <Card>
+                        <header>
+                            <p>Entradas</p>
+                            <img src={income} alt="Income" />
+                        </header>
+                        <h1 data-testid="balance-income">{balance.income}</h1>
+                    </Card>
+                    <Card>
+                        <header>
+                            <p>Saídas</p>
+                            <img src={outcome} alt="Outcome" />
+                        </header>
+                        <h1 data-testid="balance-outcome">{balance.outcome}</h1>
+                    </Card>
+                    <Card total>
+                        <header>
+                            <p>Total</p>
+                            <img src={total} alt="Total" />
+                        </header>
+                        <h1 data-testid="balance-total">{balance.total}</h1>
+                    </Card>
+                </CardContainer>
 
-            <tbody>
-              <tr>
-                <td className="title">Computer</td>
-                <td className="income">R$ 5.000,00</td>
-                <td>Sell</td>
-                <td>20/04/2020</td>
-              </tr>
-              <tr>
-                <td className="title">Website Hosting</td>
-                <td className="outcome">- R$ 1.000,00</td>
-                <td>Hosting</td>
-                <td>19/04/2020</td>
-              </tr>
-            </tbody>
-          </table>
-        </TableContainer>
-      </Container>
-    </>
-  );
+                <TableContainer>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Título</th>
+                                <th>Preço</th>
+                                <th>Categoria</th>
+                                <th>Data</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {transactions.map(transaction => (
+                                <tr key={transaction.id}>
+                                    <td className="title">
+                                        {transaction.title}
+                                    </td>
+                                    <td className="income">
+                                        {transaction.formattedValue}
+                                    </td>
+                                    <td>{transaction.category.title}</td>
+                                    <td>
+                                        {new Date(
+                                            transaction.created_at,
+                                        ).toLocaleDateString()}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </TableContainer>
+            </Container>
+        </>
+    );
 };
 
 export default Dashboard;
