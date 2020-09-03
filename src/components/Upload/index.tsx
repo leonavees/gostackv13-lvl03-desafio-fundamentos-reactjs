@@ -76,27 +76,6 @@ const Upload: React.FC<UploadProps> = ({ onUpload }: UploadProps) => {
                     renderDragMessage(isDragActive, isDragReject)
                 )}
             </DropContainer>
-
-            {/* <Dropzone
-                accept="application/vnd.ms-excel"
-                onDropAccepted={files => console.log(files)}
-            >
-                {({
-                    getRootProps,
-                    getInputProps,
-                    isDragActive,
-                    isDragReject,
-                }): any => (
-                    <DropContainer
-                        {...getRootProps()}
-                        isDragActive={isDragActive}
-                        isDragReject={isDragReject}
-                    >
-                        <input {...getInputProps()} data-testid="upload" />
-                        {renderDragMessage(isDragActive, isDragReject)}
-                    </DropContainer>
-                )}
-            </Dropzone> */}
         </>
     );
 };
